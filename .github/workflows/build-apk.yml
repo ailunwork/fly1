@@ -20,30 +20,21 @@ jobs:
         with:
           gradle-version: 8.7
 
-      # 这里彻底改掉了原本不靠谱的自动找包，直接强行指定 plane-game.zip
       - name: 解压并校验版本
         id: loc
         run: |
           ZIP_FILE="plane-game.zip"
           if [ ! -f "$ZIP_FILE" ]; then
-            echo "::error::找不到 plane-game.zip，请确认已运行 make_zip.py 并提交"
+            echo "::error::找不到 $ZIP_FILE"
             exit 1
           fi
           echo "使用压缩包: $ZIP_FILE"
           unzip -oq "$ZIP_FILE" -d _proj
-          
           S=$(find _proj -name 'settings.gradle*' | head -1)
-          if [ -z "$S" ]; then
-            echo "::error::压缩包内没有找到 settings.gradle"
-            exit 1
-          fi
-          
           DIR=$(dirname "$S")
-          echo "找到项目路径: $DIR"
-          echo "========== 校验版本信息 =========="
+          echo "========== 正在校验版本信息 =========="
           grep -E "versionCode|versionName" "$DIR/app/build.gradle" || true
-          grep -oE "const VERSION = '[^']+'" "$DIR/app/src/main/assets/index.html" || true
-          echo "=================================="
+          echo "======================================"
           echo "dir=$DIR" >> $GITHUB_OUTPUT
 
       - name: 构建 APK
